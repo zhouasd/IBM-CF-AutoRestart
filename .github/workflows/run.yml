@@ -1,0 +1,31 @@
+name: IBM Cloud Foundry Auto Restart
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 21 * * 0'
+
+jobs:
+  ibm-cf-restart:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Init
+      run: |
+        chmod -R 777 IBM_Cloud_CLI/
+        IBM_Cloud_CLI/ibmcloud cf install
+
+    - name: Login IBM CF
+      run: |
+        IBM_Cloud_CLI/ibmcloud login -u ${{ secrets.ACCOUNT }} -p ${{ secrets.PWD }} -r ${{ secrets.REGION }}
+
+    - name: Restart IBM CF
+      run: |
+        IBM_Cloud_CLI/ibmcloud target -g Default
+        IBM_Cloud_CLI/ibmcloud target --cf
+        IBM_Cloud_CLI/ibmcloud cf restart ${{ secrets.APP_NAME }}
